@@ -27,7 +27,13 @@
 </div><div id="live-scores" style="padding:20px; color:white;">
   <h2>🔴 Live Football Scores</h2>
   <p id="score-status">Loading football scores...</p>
-  <button onclick="alert('The button works!')">Test Button</button>
+  <button id="testBtn">Test Button</button>
+
+<script>
+document.getElementById("testBtn").addEventListener("click", function() {
+  alert("The button works!");
+});
+</script>
 </div><script>
 async function loadScores() {
   const status = document.getElementById("score-status");
