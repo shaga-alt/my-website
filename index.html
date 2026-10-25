@@ -3,6 +3,230 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kick-Up | Football Live</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#08120e;color:white;font-family:Arial,sans-serif}
+header{background:#10251a;padding:22px 15px;text-align:center;border-bottom:3px solid #39e879}
+header h1{margin:0;color:#39e879;font-size:34px}
+header p{margin:8px 0 0;color:#d0ded5}
+nav{display:flex;justify-content:center;gap:10px;flex-wrap:wrap;padding:15px}
+button,select{background:#173426;color:white;border:1px solid #39e879;border-radius:8px;padding:11px;cursor:pointer}
+button:hover{background:#24543a}
+main{max-width:900px;margin:auto;padding:15px}
+h2{color:#39e879}
+.panel{background:#10251a;border-radius:12px;padding:15px;margin:15px 0}
+.match,.row{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:13px 5px;border-bottom:1px solid #294435}
+.match:last-child,.row:last-child{border-bottom:0}
+.score{font-weight:bold;color:#39e879;white-space:nowrap}
+.muted{color:#b7c9bd;font-size:13px}
+.error{color:#ffb0a8}
+table{width:100%;border-collapse:collapse;font-size:14px}
+th,td{padding:10px 5px;text-align:center;border-bottom:1px solid #294435}
+th{color:#39e879}
+td:nth-child(2),th:nth-child(2){text-align:left}
+footer{text-align:center;padding:25px;color:#9db5a5}
+</style>
+</head>
+<body>
+<header>
+  <h1>⚽ KICK-UP</h1>
+  <p>Your football world — scores, fixtures and league tables</p>
+</header>
+
+<nav>
+  <button onclick="showSection('matches')">Matches</button>
+  <button onclick="showSection('table')">League Table</button>
+  <button onclick="loadData()">🔄 Refresh</button>
+</nav>
+
+<main>
+  <section class="panel">
+    <label for="league">Choose a league: </label>
+    <select id="league" onchange="loadData()">
+      <option value="eng.1">English Premier League</option>
+      <option value="esp.1">Spanish La Liga</option>
+      <option value="ger.1">German Bundesliga</option>
+      <option value="ita.1">Italian Serie A</option>
+      <option value="fra.1">French Ligue 1</option>
+    </select>
+    <p class="muted">Data availability and update speed depend on the competition and API.</p>
+  </section>
+
+  <section id="matches" class="panel">
+    <h2>⚽ Matches & Scores</h2>
+    <p id="matchStatus" class="muted">Loading matches...</p>
+    <div id="matchList"></div>
+  </section>
+
+  <section id="table" class="panel">
+    <h2>🏆 League Table</h2>
+    <p id="tableStatus" class="muted">Loading standings...</p>
+    <div id="tableList"></div>
+  </section>
+</main>
+
+<footer>Kick-Up ⚽ | Made for football fans</footer>
+
+<script>
+const API = "https://api.matchgrind.space/get/soccer/";
+
+function showSection(id){
+  document.getElementById(id).scrollIntoView({behavior:"smooth"});
+}
+
+async function getJSON(url){
+  const response = await fetch(url);
+  if(!response.ok) throw new Error("API request failed: " + response.status);
+  return response.json();
+}
+
+function getEvents(data){
+  if(Array.isArray(data)) return data;
+  if(Array.isArray(data.events)) return data.events;
+  if(Array.isArray(data.leagues)) return data.leagues.flatMap(x=>x.events||[]);
+  if(Array.isArray(data.data)) return data.data;
+  return [];
+}
+
+function teamName(team){
+  if(typeof team === "string") return team;
+  return team?.displayName || team?.name || team?.shortDisplayName || "Team";
+}
+
+function renderMatches(data){
+  const list = document.getElementById("matchList");
+  const status = document.getElementById("matchStatus");
+  const events = getEvents(data);
+  list.innerHTML = "";
+
+  if(!events.length){
+    status.textContent = "No matches were returned. The league may have no fixtures available right now.";
+    return;
+  }
+
+  status.textContent = "Matches returned by the football data API.";
+  events.forEach(event=>{
+    const competition = event.competitions?.[0] || event;
+    const competitors = competition.competitors || event.competitors || [];
+    const home = competitors.find(t=>t.homeAway==="home") || competitors[0];
+    const away = competitors.find(t=>t.homeAway==="away") || competitors[1];
+    const homeScore = home?.score ?? "-";
+    const awayScore = away?.score ?? "-";
+    const state = event.status?.type?.shortDetail ||
+                  event.status?.type?.detail ||
+                  event.status?.displayClock ||
+                  event.status?.type?.name || "Scheduled";
+
+    const card = document.createElement("div");
+    card.className = "match";
+    card.innerHTML =
+      '<span>' + escapeHTML(teamName(home?.team || home)) +
+      '<br><span class="muted">vs</span><br>' +
+      escapeHTML(teamName(away?.team || away)) + '</span>' +
+      '<span class="score">' + escapeHTML(String(homeScore)) + ' - ' +
+      escapeHTML(String(awayScore)) + '<br><span class="muted">' +
+      escapeHTML(state) + '</span></span>';
+    list.appendChild(card);
+  });
+}
+
+function renderTable(data){
+  const list = document.getElementById("tableList");
+  const status = document.getElementById("tableStatus");
+  const groups = data.children || data.standings || [];
+  const rows = [];
+
+  function findRows(obj){
+    if(!obj) return;
+    if(Array.isArray(obj)) return obj.forEach(findRows);
+    if(obj.team && (obj.stats || obj.note || obj.rank)) rows.push(obj);
+    if(obj.entries) findRows(obj.entries);
+    if(obj.children) findRows(obj.children);
+    if(obj.standings) findRows(obj.standings);
+    if(obj.groups) findRows(obj.groups);
+  }
+  findRows(groups);
+  findRows(data);
+
+  const unique = [...new Map(rows.map(r=>[r.team?.id || r.team?.name || JSON.stringify(r.team),r])).values()];
+  list.innerHTML = "";
+
+  if(!unique.length){
+    status.textContent = "Standings weren't available in the expected format for this league.";
+    return;
+  }
+
+  status.textContent = "League standings from the API.";
+  const table = document.createElement("table");
+  table.innerHTML = "<thead><tr><th>#</th><th>Team</th><th>MP</th><th>W</th><th>D</th><th>L</th><th>GD</th><th>Pts</th></tr></thead>";
+  const tbody = document.createElement("tbody");
+
+  unique.sort((a,b)=>(a.rank||999)-(b.rank||999)).forEach((row,i)=>{
+    const stats = row.stats || [];
+    function stat(name){
+      const found = stats.find(s=>s.name===name || s.abbreviation===name);
+      return found ? found.value : "-";
+    }
+    const tr = document.createElement("tr");
+    const values = [
+      row.rank || i+1,
+      teamName(row.team),
+      stat("gamesPlayed"),
+      stat("wins"),
+      stat("ties"),
+      stat("losses"),
+      stat("pointDifferential"),
+      stat("points")
+    ];
+    values.forEach((value,index)=>{
+      const td=document.createElement("td");
+      td.textContent=value;
+      tr.appendChild(td);
+    });
+    tbody.appendChild(tr);
+  });
+  table.appendChild(tbody);
+  list.appendChild(table);
+}
+
+function escapeHTML(value){
+  return String(value).replace(/[&<>"']/g, char => ({
+    "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
+  })[char]);
+}
+
+async function loadData(){
+  const league = document.getElementById("league").value;
+  document.getElementById("matchStatus").textContent = "Loading matches...";
+  document.getElementById("tableStatus").textContent = "Loading table...";
+  try{
+    const data = await getJSON(API + league + "/scoreboard");
+    renderMatches(data);
+  }catch(error){
+    document.getElementById("matchStatus").innerHTML =
+      '<span class="error">Could not load matches. Check your internet connection or try again later.</span>';
+  }
+
+  try{
+    const season = new Date().getFullYear();
+    const data = await getJSON(API + league + "/standings?season=" + season);
+    renderTable(data);
+  }catch(error){
+    document.getElementById("tableStatus").innerHTML =
+      '<span class="error">Could not load standings for this league.</span>';
+  }
+}
+
+loadData();
+setInterval(loadData, 60000);
+</script>
+</body>
+</html><!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Kick-Up | Football Hub</title>
 <style>
 :root {
