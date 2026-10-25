@@ -24,4 +24,60 @@
     <p>League: Premier League</p>
 </div>
 
-</div>
+</div><div id="live-scores" style="padding:20px; color:white;">
+  <h2>🔴 Live Football Scores</h2>
+  <p id="score-status">Loading football scores...</p>
+  <div id="score-list"></div>
+  <button onclick="loadScores()">Refresh Scores</button>
+</div><script>
+async function loadScores() {
+  const status = document.getElementById("score-status");
+  const list = document.getElementById("score-list");
+
+  status.textContent = "Loading scores...";
+  list.innerHTML = "";
+
+  try {
+    const response = await fetch(
+      "https://api.matchgrind.space/get/soccer/eng.1/scoreboard"
+    );
+
+    if (!response.ok) throw new Error("Scores unavailable");
+
+    const data = await response.json();
+
+    const games = Array.isArray(data)
+      ? data
+      : data.events || data.games || data.items || [];
+
+    if (!games.length) {
+      status.textContent =
+        "No scores are available right now. Try again later.";
+      return;
+    }
+
+    status.textContent = "Football results";
+
+    games.forEach(game => {
+      const card = document.createElement("div");
+      card.style.cssText =
+        "background:#1c2738;padding:15px;margin:12px 0;border-radius:10px;";
+
+      card.textContent =
+        (game.name || game.shortName ||
+         game.homeTeam?.name || "Home team") +
+        "  " + (game.homeScore ?? game.home_score ?? "-") +
+        " - " + (game.awayScore ?? game.away_score ?? "-") +
+        "  " + (game.awayTeam?.name ||
+                game.away_team?.name || "Away team");
+
+      list.appendChild(card);
+    });
+  } catch (error) {
+    status.textContent =
+      "Scores could not load. Please try again later.";
+  }
+}
+
+loadScores();
+</script>
