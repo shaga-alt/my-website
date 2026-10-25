@@ -1,88 +1,281 @@
-<button type="button" onclick="document.getElementById('matches').scrollIntoView({ behavior: 'smooth' })">
-    Explore Football
-</button>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kick-Up | Football Hub</title>
+<style>
+:root {
+  --bg: #0b1020;
+  --panel: #151d31;
+  --green: #40e58b;
+  --text: #f4f7ff;
+  --muted: #a5b0c7;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: Arial, sans-serif;
+}
+header {
+  padding: 20px;
+  background: #10182a;
+  border-bottom: 1px solid #26324a;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.logo { font-size: 25px; font-weight: bold; }
+.logo span { color: var(--green); }
+.badge {
+  color: var(--green);
+  border: 1px solid var(--green);
+  border-radius: 20px;
+  padding: 7px 10px;
+  font-size: 12px;
+}
+.hero { padding: 28px 18px; }
+.hero h1 { font-size: 32px; margin-bottom: 8px; }
+.hero p { color: var(--muted); line-height: 1.5; }
+nav {
+  display: flex;
+  gap: 9px;
+  padding: 0 18px 18px;
+  overflow-x: auto;
+}
+nav button, .league-buttons button {
+  background: var(--panel);
+  border: 1px solid #2a3650;
+  color: var(--text);
+  padding: 11px 15px;
+  border-radius: 10px;
+  white-space: nowrap;
+  cursor: pointer;
+}
+nav button.active, .league-buttons button.active {
+  background: var(--green);
+  color: #07140d;
+  font-weight: bold;
+}
+main { padding: 0 18px 35px; }
+.section-title {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin: 20px 0 14px;
+}
+.section-title h2 { font-size: 20px; }
+.small { color: var(--muted); font-size: 12px; }
+.league-buttons {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding-bottom: 10px;
+}
+.card {
+  background: var(--panel);
+  border: 1px solid #26324a;
+  border-radius: 14px;
+  padding: 16px;
+  margin-bottom: 12px;
+}
+.match-top {
+  display: flex;
+  justify-content: space-between;
+  color: var(--muted);
+  font-size: 12px;
+  margin-bottom: 16px;
+}
+.team-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 13px 0;
+}
+.team-name { flex: 1; }
+.score { font-size: 19px; font-weight: bold; }
+.demo {
+  display: inline-block;
+  font-size: 11px;
+  color: #ffd37a;
+  background: #3a2e19;
+  padding: 5px 8px;
+  border-radius: 6px;
+}
+.table-wrap { overflow-x: auto; }
+table {
+  width: 100%;
+  border-collapse: collapse;
+  background: var(--panel);
+  border-radius: 12px;
+  overflow: hidden;
+  font-size: 13px;
+}
+th, td {
+  padding: 13px 9px;
+  text-align: left;
+  border-bottom: 1px solid #29334a;
+  white-space: nowrap;
+}
+th { color: var(--muted); }
+footer {
+  text-align: center;
+  padding: 25px;
+  color: var(--muted);
+  font-size: 12px;
+}
+.hidden { display: none; }
+</style>
+</head>
+<body>
 
- <div id="matches" style="margin-top:100px; padding:20px;">
-    <h2>⚽ Football World</h2>
-    <p>Discover your favourite football teams!</p><div style="background:#1c2738; padding:15px; margin:15px 0; border-radius:12px;">
-    <h3>🔴 Manchester United</h3>
-    <p>League: Premier League</p>
-</div>
+<header>
+  <div class="logo">⚽ KICK-<span>UP</span></div>
+  <div class="badge">FOOTBALL HUB</div>
+</header>
 
-<div style="background:#1c2738; padding:15px; margin:15px 0; border-radius:12px;">
-    <h3>⚪ Real Madrid</h3>
-    <p>League: La Liga</p>
-</div>
+<section class="hero">
+  <h1>Your Football World 🌍</h1>
+  <p>Scores, fixtures, results and league tables — all in one place.</p>
+</section>
 
-<div style="background:#1c2738; padding:15px; margin:15px 0; border-radius:12px;">
-    <h3>🔴 Arsenal</h3>
-    <p>League: Premier League</p>
-</div>
+<nav>
+  <button class="active" onclick="showSection('matches',this)">Matches</button>
+  <button onclick="showSection('tables',this)">League Tables</button>
+  <button onclick="showSection('about',this)">About</button>
+</nav>
 
-<div style="background:#1c2738; padding:15px; margin:15px 0; border-radius:12px;">
-    <h3>⚫ Sunderland</h3>
-    <p>League: Premier League</p>
-</div>
+<main>
+  <section id="matches">
+    <div class="section-title">
+      <h2>⚽ Match Centre</h2>
+      <span class="small">DEMO MODE</span>
+    </div>
 
-</div><div id="live-scores" style="padding:20px; color:white;">
-  <h2>🔴 Live Football Scores</h2>
-  <p id="score-status">Loading football scores...</p>
-  <button id="testBtn">Test Button</button>
+    <div class="league-buttons">
+      <button class="active" onclick="filterLeague('All',this)">All</button>
+      <button onclick="filterLeague('Premier League',this)">Premier League</button>
+      <button onclick="filterLeague('La Liga',this)">La Liga</button>
+      <button onclick="filterLeague('Bundesliga',this)">Bundesliga</button>
+      <button onclick="filterLeague('Serie A',this)">Serie A</button>
+      <button onclick="filterLeague('Ligue 1',this)">Ligue 1</button>
+    </div>
+
+    <p class="small">These example scores are for design testing, not real live results.</p>
+    <div id="match-list"></div>
+  </section>
+
+  <section id="tables" class="hidden">
+    <div class="section-title"><h2>🏆 League Table</h2></div>
+    <div class="league-buttons">
+      <button class="active" onclick="showTable('Premier League',this)">Premier League</button>
+      <button onclick="showTable('La Liga',this)">La Liga</button>
+      <button onclick="showTable('Bundesliga',this)">Bundesliga</button>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>#</th><th>Club</th><th>MP</th><th>Pts</th></tr>
+        </thead>
+        <tbody id="table-body"></tbody>
+      </table>
+    </div>
+    <p class="small">Example table for design testing — not current standings.</p>
+  </section>
+
+  <section id="about" class="hidden">
+    <div class="section-title"><h2>About Kick-Up</h2></div>
+    <div class="card">
+      <h3>Football brings us together. ⚽</h3>
+      <p>Kick-Up is a football website project designed for fans around the world.</p>
+      <p>Our goal is to add verified live scores, fixtures, results, league standings and club information.</p>
+      <p class="small">Live information will appear here once a reliable football data source is connected.</p>
+    </div>
+  </section>
+</main>
+
+<footer>⚽ KICK-UP · Your Football World</footer>
 
 <script>
-document.getElementById("testBtn").addEventListener("click", function() {
-  alert("The button works!");
-});
-</script>
-</div><script>
-async function loadScores() {
-  const status = document.getElementById("score-status");
-  const list = document.getElementById("score-list");
+const matches = [
+  {league:"Premier League",home:"Manchester United",away:"Arsenal",hs:2,as:1},
+  {league:"Premier League",home:"Liverpool",away:"Chelsea",hs:1,as:1},
+  {league:"La Liga",home:"Real Madrid",away:"Barcelona",hs:2,as:2},
+  {league:"La Liga",home:"Atletico Madrid",away:"Sevilla",hs:1,as:0},
+  {league:"Bundesliga",home:"Bayern Munich",away:"Dortmund",hs:3,as:1},
+  {league:"Serie A",home:"Inter Milan",away:"AC Milan",hs:2,as:0},
+  {league:"Ligue 1",home:"PSG",away:"Marseille",hs:2,as:1}
+];
 
-  status.textContent = "Loading scores...";
+const tables = {
+  "Premier League": [
+    ["1","Arsenal","0","0"],
+    ["2","Liverpool","0","0"],
+    ["3","Manchester City","0","0"],
+    ["4","Manchester United","0","0"],
+    ["5","Chelsea","0","0"]
+  ],
+  "La Liga": [
+    ["1","Real Madrid","0","0"],
+    ["2","Barcelona","0","0"],
+    ["3","Atletico Madrid","0","0"],
+    ["4","Sevilla","0","0"]
+  ],
+  "Bundesliga": [
+    ["1","Bayern Munich","0","0"],
+    ["2","Dortmund","0","0"],
+    ["3","Leverkusen","0","0"],
+    ["4","RB Leipzig","0","0"]
+  ]
+};
+
+function renderMatches(league="All") {
+  const list = document.getElementById("match-list");
   list.innerHTML = "";
+  const filtered = league === "All"
+    ? matches : matches.filter(m => m.league === league);
 
-  try {
-    const response = await fetch(
-      "https://api.matchgrind.space/get/soccer/eng.1/scoreboard"
-    );
-
-    if (!response.ok) throw new Error("Scores unavailable");
-
-    const data = await response.json();
-
-    const games = Array.isArray(data)
-      ? data
-      : data.events || data.games || data.items || [];
-
-    if (!games.length) {
-      status.textContent =
-        "No scores are available right now. Try again later.";
-      return;
-    }
-
-    status.textContent = "Football results";
-
-    games.forEach(game => {
-      const card = document.createElement("div");
-      card.style.cssText =
-        "background:#1c2738;padding:15px;margin:12px 0;border-radius:10px;";
-
-      card.textContent =
-        (game.name || game.shortName ||
-         game.homeTeam?.name || "Home team") +
-        "  " + (game.homeScore ?? game.home_score ?? "-") +
-        " - " + (game.awayScore ?? game.away_score ?? "-") +
-        "  " + (game.awayTeam?.name ||
-                game.away_team?.name || "Away team");
-
-      list.appendChild(card);
-    });
-  } catch (error) {
-    status.textContent =
-      "Scores could not load. Please try again later.";
-  }
+  filtered.forEach(m => {
+    const card = document.createElement("div");
+    card.className = "card";
+    card.innerHTML = `
+      <div class="match-top">
+        <span>${m.league}</span><span class="demo">DEMO SCORE</span>
+      </div>
+      <div class="team-row"><span>⚽</span><span class="team-name">${m.home}</span><span class="score">${m.hs}</span></div>
+      <div class="team-row"><span>⚽</span><span class="team-name">${m.away}</span><span class="score">${m.as}</span></div>`;
+    list.appendChild(card);
+  });
 }
 
-loadScores();
+function filterLeague(league,button) {
+  document.querySelectorAll(".league-buttons button").forEach(b => {
+    if (b.closest("#matches")) b.classList.remove("active");
+  });
+  button.classList.add("active");
+  renderMatches(league);
+}
+
+function showSection(id,button) {
+  ["matches","tables","about"].forEach(section => {
+    document.getElementById(section).classList.toggle("hidden",section !== id);
+  });
+  document.querySelectorAll("nav button").forEach(b => b.classList.remove("active"));
+  button.classList.add("active");
+}
+
+function showTable(league,button) {
+  document.querySelectorAll("#tables .league-buttons button").forEach(b => b.classList.remove("active"));
+  button.classList.add("active");
+  document.getElementById("table-body").innerHTML = tables[league]
+    .map(row => `<tr>${row.map(cell => `<td>${cell}</td>`).join("")}</tr>`)
+    .join("");
+}
+
+renderMatches();
+showTable("Premier League",document.querySelector("#tables .league-buttons button"));
 </script>
+</body>
+</html>
